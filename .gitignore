@@ -1,0 +1,16 @@
+# Windows shell and OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Editor settings
+.vscode/
+.idea/
+
+# PowerShell generated files
+*.ps1.xml
