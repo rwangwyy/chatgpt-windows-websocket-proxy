@@ -1,78 +1,148 @@
-# ChatGPT Windows WebSocket Proxy Launcher
+# ChatGPT / Chrome / VS Code WebSocket Proxy Launcher
 
-A lightweight Windows launcher that injects proxy settings into the ChatGPT desktop process. It is intended to keep both HTTP and WebSocket traffic on a local Clash HTTP/Mixed port without enabling Clash TUN mode or changing persistent Windows proxy settings.
+A lightweight, component-based Windows launcher that gives selected ChatGPT, Chrome, and VS Code process trees a local proxy without enabling Clash TUN mode or changing persistent Windows proxy or environment settings.
 
-> This is not an official OpenAI tool. Future ChatGPT client updates may change its networking behavior.
+> This is not an official OpenAI tool. Networking behavior may change after ChatGPT, Chrome, or VS Code updates.
+
+[中文说明](./README.md)
 
 ## Background
 
-After some ChatGPT/Codex Windows app updates, Work mode began preferring WebSocket for long-lived communication. In setups using Clash, FlClash, Clash Verge, or similar proxies without TUN mode, ordinary HTTP requests may follow the proxy while WebSocket connections bypass it or fail to establish.
+ChatGPT Work and Codex may prefer WebSocket for long-lived connections. With Clash, FlClash, Clash Verge, or similar proxy clients running without TUN mode, HTTP may work while WebSocket connects directly, times out, or repeatedly reconnects.
 
-The app may then repeatedly show `Reconnecting 1/5` through `Reconnecting 5/5` before falling back to HTTP. In typical environments, this reconnect sequence can take around 75 seconds in total. Even after the fallback succeeds, the HTTP connection experience is generally less stable and efficient than WebSocket.
+The same process-inheritance gap can affect components used by the ChatGPT Chrome extension and the local `codex.exe app-server` launched by the VS Code Codex extension. This project injects proxy settings only into targets selected by the user. Chrome and VS Code remain optional.
 
-This project provides a small, reversible launcher that injects proxy settings only into the ChatGPT process tree. Its goal is to route Work mode WebSocket traffic through the local Clash proxy, reduce unnecessary reconnect delays, and restore a more stable WebSocket experience without enabling TUN mode or changing persistent Windows proxy settings.
+## Supported targets
 
-## Requirements
+| Target | Menu option | Use case |
+| --- | --- | --- |
+| ChatGPT Windows App | ChatGPT | Desktop ChatGPT and Work |
+| Google Chrome | Chrome | Chrome traffic and child Native Host processes |
+| Visual Studio Code | VS Code | The Codex IDE extension |
+| Custom selection | ChatGPT + Chrome / All | Multiple detected targets |
 
-- Windows Store ChatGPT desktop app
-- Clash, FlClash, Clash Verge, or another local HTTP/Mixed proxy
-- A local proxy address, such as `http://127.0.0.1:7890`
+Missing optional applications are not required. The All option starts only detected applications.
 
 ## Quick start
 
-1. Start your proxy client and identify its HTTP or Mixed port.
-2. Fully exit ChatGPT, including its tray/background process.
-3. Double-click [`Start-ChatGPTWithProxy.cmd`](./Start-ChatGPTWithProxy.cmd).
+1. Start your local proxy application and identify its HTTP or Mixed proxy port.
+2. Fully exit every application you intend to relaunch, including tray/background processes.
+3. Double-click [`Start-WithProxy.cmd`](./Start-WithProxy.cmd), enter the port, and then choose from the target menu.
 
-The default proxy is `http://127.0.0.1:7890`. Pass a different port to the `.cmd` launcher:
+Enter only the port, such as `7897`; the proxy host is fixed to `127.0.0.1`. Press Enter without typing anything to use `7890`, resulting in `http://127.0.0.1:7890`.
 
-```text
-Start-ChatGPTWithProxy.cmd 127.0.0.1:7897
-```
-
-Or run the PowerShell script directly:
+To change the port or skip the interactive menu, use the unified PowerShell launcher:
 
 ```powershell
-.\Start-ChatGPTWithProxy.ps1 -Proxy 127.0.0.1:7897
+# Detect installed targets without launching anything
+.\Start-WithProxy.ps1 -ListAvailable
+
+# VS Code only
+.\Start-WithProxy.ps1 -Target VSCode -Proxy 127.0.0.1:7897
+
+# ChatGPT and Chrome for the ChatGPT Chrome extension
+.\Start-WithProxy.ps1 -Target ChatGPT,Chrome -Proxy 127.0.0.1:7897
+
+# All detected targets
+.\Start-WithProxy.ps1 -Target All -Proxy 127.0.0.1:7897
 ```
 
-Full proxy URLs are supported:
+Proxy URLs using `http`, `https`, and `socks5` are accepted. A value without a scheme is treated as HTTP.
+
+## Choosing targets
+
+### ChatGPT desktop only
+
+Double-click `Start-WithProxy.cmd` and select ChatGPT, or run:
 
 ```powershell
-.\Start-ChatGPTWithProxy.ps1 -Proxy http://127.0.0.1:7897
-.\Start-ChatGPTWithProxy.ps1 -Proxy socks5://127.0.0.1:7891
+.\Start-WithProxy.ps1 -Target ChatGPT
 ```
 
-Use `socks5://` only when the selected port is actually a SOCKS5 port. HTTP and SOCKS ports are often different in Clash configurations.
+Chrome and VS Code are not required.
 
-## If ChatGPT is already running
+### ChatGPT Chrome extension
 
-The launcher does not force-close an existing ChatGPT process by default. Exit ChatGPT first. If you have no unsaved work and explicitly want to restart it:
+Use menu option ChatGPT + Chrome or run:
 
 ```powershell
-.\Start-ChatGPTWithProxy.ps1 -Proxy 127.0.0.1:7890 -Restart
+.\Start-WithProxy.ps1 -Target ChatGPT,Chrome
 ```
+
+OpenAI documentation describes the Chrome extension as communicating with a cooperating native application and includes Native Host troubleshooting. The combined mode covers the ChatGPT desktop process tree, Chrome networking, and environment inherited by Chrome child processes. The Chrome launcher also supplies `--proxy-server` for Chrome HTTP/WSS routing. See [OpenAI Docs: Chrome extension](https://learn.chatgpt.com/docs/chrome-extension).
+
+You can still launch Chrome alone when that is all you need. The selected Chrome process sends its traffic to the local proxy port, where the proxy application's rules can choose direct or proxy routing.
+
+### VS Code Codex extension
+
+Select VS Code from the unified menu, or run:
+
+```powershell
+.\Start-WithProxy.ps1 -Target VSCode
+```
+
+The VS Code Extension Host and the local `codex.exe app-server` it launches inherit the scoped proxy variables.
+
+Alternatively, configure VS Code itself:
+
+```json
+{
+  "http.proxy": "http://127.0.0.1:7890"
+}
+```
+
+That is a persistent VS Code preference. Use this project's launcher when you want the proxy to disappear with the process instead. See [OpenAI Docs: Codex IDE extension](https://learn.chatgpt.com/docs/codex/ide) and [Codex environment variables](https://learn.chatgpt.com/docs/config-file/environment-variables).
+
+## Existing processes
+
+Proxy environment and launch flags apply only when a new process is created. The scripts refuse to close an existing application by default.
+
+After saving your work, explicitly use `-Restart` if needed:
+
+```powershell
+.\Start-WithProxy.ps1 -Target VSCode -Proxy 127.0.0.1:7890 -Restart
+.\Start-WithProxy.ps1 -Target ChatGPT,Chrome -Proxy 127.0.0.1:7890 -Restart
+```
+
+`-Restart` force-stops all matching processes, so use it carefully.
 
 ## How it works
 
-The launcher finds the installed AppX package, sets `HTTP_PROXY`, `HTTPS_PROXY`, `WS_PROXY`, and `WSS_PROXY` only in the launcher process, and starts ChatGPT from that process.
+The unified entry point and new optional launchers use [`ProxyLauncher.Core.ps1`](./ProxyLauncher.Core.ps1). It performs target detection, validates the proxy URL, sets `HTTP_PROXY`, `HTTPS_PROXY`, `WS_PROXY`, `WSS_PROXY`, and local `NO_PROXY` only in the launcher process, then starts the selected application. Chrome additionally receives `--proxy-server`.
 
-It does not modify:
+The project does not:
 
-- Windows user or system environment variables;
-- the registry or Windows system proxy settings;
-- routes, drivers, or TUN configuration;
-- administrator-only system state.
+- change Windows user or system environment variables;
+- change registry or Windows system proxy settings;
+- enable TUN, install a driver, or modify routes;
+- install Chrome, VS Code, or extensions;
+- require administrator privileges.
 
-The workaround is motivated by a public Windows report where HTTP respected the system proxy but WebSocket transport timed out; explicit `HTTP_PROXY` and `HTTPS_PROXY` settings made WebSocket transport work. See [openai/codex#29958](https://github.com/openai/codex/issues/29958).
+The desktop workaround is motivated by a public Windows report where HTTP respected the system proxy but WebSocket timed out; explicit `HTTP_PROXY` and `HTTPS_PROXY` settings restored WebSocket transport. See [openai/codex#29958](https://github.com/openai/codex/issues/29958).
 
 ## Troubleshooting
 
-- Make sure the proxy client is running and the selected port is HTTP or Mixed.
-- Check that `chatgpt.com` TCP 443 and WebSocket Upgrade traffic are allowed by your proxy rules.
-- Confirm that `ChatGPT.exe` appears in the proxy connection list.
-- Make sure ChatGPT was started by this launcher, rather than an older instance.
-- If the app cannot be found, verify that it was installed through Microsoft Store for the current Windows user. See the [official OpenAI instructions](https://help.openai.com/en/articles/9982051-using-the-chatgpt-windows-app).
+- Run `.\Start-WithProxy.ps1 -ListAvailable` to inspect target detection without launching applications.
+- Fully exit existing Chrome or VS Code background processes before launching.
+- Verify that the proxy client is running and that the URL scheme matches the selected port type.
+- Confirm that Clash rules allow `chatgpt.com` TCP 443 and WebSocket Upgrade traffic.
+- Make sure the application was started by this project rather than an older process.
+- For Chrome extension failures, verify the desktop app, extension, and Native Host installation.
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| `Start-WithProxy.cmd` | The only double-click entry point; opens the target menu |
+| `Start-WithProxy.ps1` | Unified command-line and multi-target launcher |
+| `Start-ChatGPTWithProxy.ps1` | Compatibility ChatGPT-only script |
+| `Start-ChromeWithProxy.ps1` | Chrome-only PowerShell entry point |
+| `Start-VSCodeWithProxy.ps1` | VS Code-only PowerShell entry point |
+| `ProxyLauncher.Core.ps1` | Shared detection and scoped proxy logic |
+
+## Uninstall
+
+Delete the repository directory. No service, driver, scheduled task, or persistent proxy configuration is installed.
 
 ## License
 
