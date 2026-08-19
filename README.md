@@ -6,6 +6,12 @@
 
 [English](./README.en.md)
 
+## ⚡ 快速开始
+
+1. 前往 [Releases](https://github.com/rwangwyy/chatgpt-windows-websocket-proxy/releases) 下载最新 ZIP；
+2. 右键 ZIP →“属性”→“解除锁定”，然后解压；
+3. 双击 `Start-WithProxy.cmd`，按菜单选择即可。
+
 ## 项目背景
 
 ChatGPT Work 和 Codex 在部分 Windows 版本中会优先使用 WebSocket 进行长连接通信。对于使用 Clash、FlClash、Clash Verge 等代理、但没有开启 TUN 模式的环境，HTTP 请求可能可以正常通过代理，而 WebSocket 却直接连接、超时或反复重连。
@@ -48,7 +54,7 @@ Get-Content .\SHA256SUMS.txt
 
 Windows 会给来自互联网的文件添加安全标记，因此未解除锁定时可能显示“未知发布者”警告；这不等同于文件已经被杀毒软件判定为恶意软件。仅应解除来自本仓库官方 Release、且哈希验证一致的文件。不要关闭 Defender、SmartScreen 或添加目录排除项。
 
-## 快速开始
+## 详细使用
 
 1. 启动你的本地代理软件，确认其 HTTP 或 Mixed 代理端口。
 2. 完全退出准备通过代理启动的应用，包括托盘和后台进程。
