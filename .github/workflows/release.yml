@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build release archive and checksum
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $tag = "${{ github.ref_name }}"
+          $packageName = "chatgpt-windows-websocket-proxy-$tag"
+          $stagingPath = Join-Path $env:RUNNER_TEMP $packageName
+          $zipPath = Join-Path $PWD "$packageName.zip"
+
+          New-Item -ItemType Directory -Path $stagingPath | Out-Null
+
+          $releaseFiles = @(
+            "Start-WithProxy.cmd",
+            "Start-WithProxy.ps1",
+            "Start-ChatGPTWithProxy.ps1",
+            "Start-ChromeWithProxy.ps1",
+            "Start-VSCodeWithProxy.ps1",
+            "ProxyLauncher.Core.ps1",
+            "README.md",
+            "README.en.md",
+            "CHANGELOG.md",
+            "LICENSE"
+          )
+
+          foreach ($file in $releaseFiles) {
+            Copy-Item -LiteralPath $file -Destination $stagingPath
+          }
+
+          Compress-Archive -LiteralPath $stagingPath -DestinationPath $zipPath -CompressionLevel Optimal
+          $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash
+          "$hash  $packageName.zip" | Set-Content -LiteralPath "SHA256SUMS.txt" -Encoding ascii
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $zipName = "chatgpt-windows-websocket-proxy-$tag.zip"
+          gh release create $tag $zipName SHA256SUMS.txt --title $tag --generate-notes --verify-tag

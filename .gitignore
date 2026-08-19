@@ -8,6 +8,7 @@ Desktop.ini
 *.log
 *.tmp
 *.bak
+dist/
 
 # Editor settings
 .vscode/

@@ -25,13 +25,36 @@ ChatGPT Work 和 Codex 在部分 Windows 版本中会优先使用 WebSocket 进�
 
 没有安装 Chrome 或 VS Code 不影响 ChatGPT 启动器；“全部”模式也只启动本机检测到的组件。
 
+## 推荐下载方式
+
+请从本仓库的 [GitHub Releases](../../releases/latest) 下载以下两个文件，不建议单独下载 Raw `.cmd` 文件：
+
+- `chatgpt-windows-websocket-proxy-vX.Y.Z.zip`
+- `SHA256SUMS.txt`
+
+下载后先验证 ZIP 的 SHA-256：
+
+```powershell
+$zip = Get-ChildItem .\chatgpt-windows-websocket-proxy-*.zip | Select-Object -First 1
+(Get-FileHash -LiteralPath $zip.FullName -Algorithm SHA256).Hash
+Get-Content .\SHA256SUMS.txt
+```
+
+确认计算结果与 `SHA256SUMS.txt` 中的哈希完全一致后：
+
+1. 右键 ZIP 文件，选择“属性”；
+2. 在“常规”页底部勾选“解除锁定”，点击“应用”；
+3. 再解压 ZIP，并双击 `Start-WithProxy.cmd`。
+
+Windows 会给来自互联网的文件添加安全标记，因此未解除锁定时可能显示“未知发布者”警告；这不等同于文件已经被杀毒软件判定为恶意软件。仅应解除来自本仓库官方 Release、且哈希验证一致的文件。不要关闭 Defender、SmartScreen 或添加目录排除项。
+
 ## 快速开始
 
 1. 启动你的本地代理软件，确认其 HTTP 或 Mixed 代理端口。
 2. 完全退出准备通过代理启动的应用，包括托盘和后台进程。
-3. 双击 [`Start-WithProxy.cmd`](./Start-WithProxy.cmd)，先输入端口号，再按菜单选择目标。
+3. 双击 [`Start-WithProxy.cmd`](./Start-WithProxy.cmd)，按菜单选择目标。
 
-这里只需要输入端口号，例如 `7897`；代理主机固定为 `127.0.0.1`。不输入直接回车时使用默认端口 `7890`，即 `http://127.0.0.1:7890`。
+默认使用 `http://127.0.0.1:7890`。如果端口不同，先在菜单中选择“修改代理端口”，只需输入端口号（例如 `7897`），然后再选择需要启动的目标。
 
 需要更换端口或跳过交互菜单时，可以使用统一 PowerShell 入口：
 
@@ -195,6 +218,8 @@ cd "D:\path\to\ProxyFix"
 ## 贡献
 
 欢迎提交 Issue 或 Pull Request。请尽量提供 Windows 版本、目标应用版本、代理软件和端口类型、运行命令及错误信息。请勿粘贴账号、Token、订阅链接或其他敏感信息。
+
+维护者推送 `v*` 标签后，GitHub Actions 会自动创建包含完整 ZIP 和 `SHA256SUMS.txt` 的 Release。
 
 ## 许可证
 
