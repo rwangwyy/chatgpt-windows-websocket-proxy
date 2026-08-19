@@ -23,6 +23,29 @@ The same process-inheritance gap can affect components used by the ChatGPT Chrom
 
 Missing optional applications are not required. The All option starts only detected applications.
 
+## Recommended download
+
+Download these two files from this repository's [GitHub Releases](../../releases/latest). Avoid downloading the raw `.cmd` file by itself:
+
+- `chatgpt-windows-websocket-proxy-vX.Y.Z.zip`
+- `SHA256SUMS.txt`
+
+Verify the ZIP's SHA-256 after downloading:
+
+```powershell
+$zip = Get-ChildItem .\chatgpt-windows-websocket-proxy-*.zip | Select-Object -First 1
+(Get-FileHash -LiteralPath $zip.FullName -Algorithm SHA256).Hash
+Get-Content .\SHA256SUMS.txt
+```
+
+After confirming that the calculated hash exactly matches `SHA256SUMS.txt`:
+
+1. Right-click the ZIP and select Properties.
+2. On the General tab, select Unblock and then Apply.
+3. Extract the ZIP and double-click `Start-WithProxy.cmd`.
+
+Windows marks files downloaded from the internet and may show an Unknown publisher warning when they remain blocked. This does not by itself mean antivirus software classified the file as malware. Only unblock a ZIP downloaded from this repository's official Release after its hash matches. Do not disable Defender or SmartScreen, and do not add a folder exclusion.
+
 ## Quick start
 
 1. Start your local proxy application and identify its HTTP or Mixed proxy port.
@@ -143,6 +166,8 @@ The desktop workaround is motivated by a public Windows report where HTTP respec
 ## Uninstall
 
 Delete the repository directory. No service, driver, scheduled task, or persistent proxy configuration is installed.
+
+For maintainers, pushing a `v*` tag automatically creates a GitHub Release containing the complete ZIP and `SHA256SUMS.txt`.
 
 ## License
 

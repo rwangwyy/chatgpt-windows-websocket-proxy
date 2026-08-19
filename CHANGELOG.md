@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 
-- No changes yet.
+- Add an automated GitHub Release workflow that publishes a complete ZIP and `SHA256SUMS.txt` for `v*` tags.
+- Document checksum verification and unblocking the ZIP before extraction.
 
 ## [1.1.0] - 2026-08-18
 
