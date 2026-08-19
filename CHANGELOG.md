@@ -4,6 +4,7 @@
 
 - Add an automated GitHub Release workflow that publishes a complete ZIP and `SHA256SUMS.txt` for `v*` tags.
 - Document checksum verification and unblocking the ZIP before extraction.
+- Add a prominent three-step quick-start section at the top of both README files.
 
 ## [1.1.0] - 2026-08-18
 

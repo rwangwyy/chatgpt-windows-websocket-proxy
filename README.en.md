@@ -6,6 +6,12 @@ A lightweight, component-based Windows launcher that gives selected ChatGPT, Chr
 
 [中文说明](./README.md)
 
+## ⚡ Quick start
+
+1. Open [Releases](https://github.com/rwangwyy/chatgpt-windows-websocket-proxy/releases) and download the latest ZIP.
+2. Right-click the ZIP → Properties → Unblock, and then extract it.
+3. Double-click `Start-WithProxy.cmd` and choose from the menu.
+
 ## Background
 
 ChatGPT Work and Codex may prefer WebSocket for long-lived connections. With Clash, FlClash, Clash Verge, or similar proxy clients running without TUN mode, HTTP may work while WebSocket connects directly, times out, or repeatedly reconnects.
@@ -46,7 +52,7 @@ After confirming that the calculated hash exactly matches `SHA256SUMS.txt`:
 
 Windows marks files downloaded from the internet and may show an Unknown publisher warning when they remain blocked. This does not by itself mean antivirus software classified the file as malware. Only unblock a ZIP downloaded from this repository's official Release after its hash matches. Do not disable Defender or SmartScreen, and do not add a folder exclusion.
 
-## Quick start
+## Detailed usage
 
 1. Start your local proxy application and identify its HTTP or Mixed proxy port.
 2. Fully exit every application you intend to relaunch, including tray/background processes.
