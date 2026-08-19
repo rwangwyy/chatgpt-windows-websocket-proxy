@@ -27,9 +27,9 @@ Missing optional applications are not required. The All option starts only detec
 
 1. Start your local proxy application and identify its HTTP or Mixed proxy port.
 2. Fully exit every application you intend to relaunch, including tray/background processes.
-3. Double-click [`Start-WithProxy.cmd`](./Start-WithProxy.cmd), enter the port, and then choose from the target menu.
+3. Double-click [`Start-WithProxy.cmd`](./Start-WithProxy.cmd) and choose from the target menu.
 
-Enter only the port, such as `7897`; the proxy host is fixed to `127.0.0.1`. Press Enter without typing anything to use `7890`, resulting in `http://127.0.0.1:7890`.
+The default is `http://127.0.0.1:7890`. If your port differs, first choose Change proxy port from the menu, enter only the port (for example, `7897`), and then select the target to launch.
 
 To change the port or skip the interactive menu, use the unified PowerShell launcher:
 

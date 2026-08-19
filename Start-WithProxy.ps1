@@ -20,33 +20,11 @@ param(
 
     [switch]$Restart,
 
-    [switch]$ListAvailable,
-
-    [switch]$PromptForPort
+    [switch]$ListAvailable
 )
 
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\ProxyLauncher.Core.ps1"
-
-if ($PromptForPort) {
-    $portText = Read-Host "请输入本地 HTTP/Mixed 代理端口 / Enter local HTTP/Mixed proxy port (default: 7890)"
-    if ([string]::IsNullOrWhiteSpace($portText)) {
-        $portText = "7890"
-    }
-    else {
-        $portText = $portText.Trim()
-    }
-
-    $port = 0
-    if (-not [int]::TryParse($portText, [ref]$port) -or $port -lt 1 -or $port -gt 65535) {
-        Write-Error "端口必须是 1 到 65535 之间的数字。 / Port must be a number from 1 to 65535."
-        exit 1
-    }
-
-    $Proxy = "http://127.0.0.1:$port"
-    Write-Host "使用本地代理 / Local proxy: $Proxy"
-    Write-Host ""
-}
 
 if ($ListAvailable) {
     Get-ProxyTargetAvailability | Format-Table -AutoSize
@@ -54,25 +32,44 @@ if ($ListAvailable) {
 }
 
 if (-not $Target -or $Target.Count -eq 0) {
-    Write-Host "请选择要使用代理启动的组件 / Select targets:"
-    Write-Host "  1. ChatGPT Windows App"
-    Write-Host "  2. Google Chrome"
-    Write-Host "  3. Visual Studio Code"
-    Write-Host "  4. ChatGPT + Chrome（推荐用于 ChatGPT Chrome 扩展）"
-    Write-Host "  5. 本机已安装的全部组件 / All installed"
-    Write-Host "  0. 取消 / Cancel"
+    while (-not $Target -or $Target.Count -eq 0) {
+        $proxyUri = [Uri](ConvertTo-ProxyUri $Proxy)
 
-    $selection = (Read-Host "请输入数字 / Enter a number").Trim()
-    switch ($selection) {
-        "1" { $Target = @("ChatGPT") }
-        "2" { $Target = @("Chrome") }
-        "3" { $Target = @("VSCode") }
-        "4" { $Target = @("ChatGPT", "Chrome") }
-        "5" { $Target = @("All") }
-        "0" { exit 0 }
-        default {
-            Write-Error "无效选择。 / Invalid selection."
-            exit 1
+        Write-Host "请选择要使用代理启动的组件 / Select targets:"
+        Write-Host "  1. ChatGPT Windows App"
+        Write-Host "  2. Google Chrome"
+        Write-Host "  3. Visual Studio Code"
+        Write-Host "  4. ChatGPT + Chrome（推荐用于 ChatGPT Chrome 扩展）"
+        Write-Host "  5. 本机已安装的全部组件 / All installed"
+        Write-Host "  6. 修改代理端口（当前：$($proxyUri.Port)） / Change proxy port (current: $($proxyUri.Port))"
+        Write-Host "  0. 取消 / Cancel"
+
+        $selection = (Read-Host "请输入数字 / Enter a number").Trim()
+        switch ($selection) {
+            "1" { $Target = @("ChatGPT") }
+            "2" { $Target = @("Chrome") }
+            "3" { $Target = @("VSCode") }
+            "4" { $Target = @("ChatGPT", "Chrome") }
+            "5" { $Target = @("All") }
+            "6" {
+                $portText = (Read-Host "请输入新端口（回车保持 $($proxyUri.Port)） / Enter new port (Enter keeps $($proxyUri.Port))").Trim()
+                if (-not [string]::IsNullOrWhiteSpace($portText)) {
+                    $port = 0
+                    if (-not [int]::TryParse($portText, [ref]$port) -or $port -lt 1 -or $port -gt 65535) {
+                        Write-Warning "端口必须是 1 到 65535 之间的数字。 / Port must be a number from 1 to 65535."
+                    }
+                    else {
+                        $Proxy = "$($proxyUri.Scheme)://$($proxyUri.Host):$port"
+                        Write-Host "代理端口已更新 / Proxy port updated: $port"
+                    }
+                }
+                Write-Host ""
+            }
+            "0" { exit 0 }
+            default {
+                Write-Warning "无效选择。 / Invalid selection."
+                Write-Host ""
+            }
         }
     }
 }

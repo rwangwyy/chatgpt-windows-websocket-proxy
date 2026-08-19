@@ -9,7 +9,7 @@
 - Add optional Chrome and VS Code proxy launchers.
 - Add a unified launcher with an interactive target menu and target combinations.
 - Keep `Start-WithProxy.cmd` as the only double-click entry point; individual targets remain available through PowerShell.
-- Prompt bilingually for the local HTTP/Mixed proxy port before showing the target menu; pressing Enter uses port `7890`.
+- Add a bilingual menu option for changing the local HTTP/Mixed proxy port; the default remains `7890`.
 - Add installed-target detection and the `-ListAvailable` command.
 - Route Chrome through the selected proxy with a process launch flag.
 - Expand the Chinese and English documentation for ChatGPT, the ChatGPT Chrome extension, and the Codex VS Code extension.
