@@ -1,6 +1,6 @@
 # 变更记录 / Changelog
 
-## [Unreleased]
+## [2.0.0] - 2026-09-09
 
 - 按系统整理项目目录：Windows 文件移入 `windows/`，macOS 文件移入 `macos/`。
 - 为 macOS 增加 ChatGPT、Chrome、VS Code 独立入口和统一入口。
