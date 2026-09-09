@@ -28,15 +28,15 @@ jobs:
           New-Item -ItemType Directory -Path $stagingPath | Out-Null
 
           $releaseFiles = @(
-            "Start-WithProxy.cmd",
-            "Start-WithProxy.ps1",
-            "Start-ChatGPTWithProxy.ps1",
-            "Start-ChromeWithProxy.ps1",
-            "Start-VSCodeWithProxy.ps1",
-            "ProxyLauncher.Core.ps1",
+            "windows/Start-WithProxy.cmd",
+            "windows/Start-WithProxy.ps1",
+            "windows/Start-ChatGPTWithProxy.ps1",
+            "windows/Start-ChromeWithProxy.ps1",
+            "windows/Start-VSCodeWithProxy.ps1",
+            "windows/ProxyLauncher.Core.ps1",
             "README.md",
             "README.en.md",
-            "CHANGELOG.md",
+            "docs/CHANGELOG.md",
             "LICENSE"
           )
 

@@ -4,6 +4,12 @@ ehthumbs.db
 Desktop.ini
 *.lnk
 
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
 # Logs and temporary files
 *.log
 *.tmp
@@ -16,3 +22,6 @@ dist/
 
 # PowerShell generated files
 *.ps1.xml
+
+# Locally generated media
+assets/video-covers/
