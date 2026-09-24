@@ -2,6 +2,8 @@
 
 ## 中文
 
+发布包可从 [GitHub Releases](https://github.com/rwangwyy/chatgpt-windows-websocket-proxy/releases) 下载。Windows 和 macOS 提供独立 ZIP。
+
 ### Windows
 
 1. 启动本地代理软件，确认 HTTP 或 Mixed 代理端口。
@@ -63,6 +65,8 @@ socks5://127.0.0.1:7891
 ```
 
 ## English
+
+Download the platform-specific ZIP files from [GitHub Releases](https://github.com/rwangwyy/chatgpt-windows-websocket-proxy/releases). Windows and macOS are published separately.
 
 ### Windows
 

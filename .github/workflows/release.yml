@@ -9,14 +9,13 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  windows-package:
     runs-on: windows-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Build release archive and checksum
+      - name: Build Windows archive
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -24,9 +23,7 @@ jobs:
           $packageName = "chatgpt-windows-websocket-proxy-$tag"
           $stagingPath = Join-Path $env:RUNNER_TEMP $packageName
           $zipPath = Join-Path $PWD "$packageName.zip"
-
           New-Item -ItemType Directory -Path $stagingPath | Out-Null
-
           $releaseFiles = @(
             "windows/Start-WithProxy.cmd",
             "windows/Start-WithProxy.ps1",
@@ -36,23 +33,68 @@ jobs:
             "windows/ProxyLauncher.Core.ps1",
             "README.md",
             "README.en.md",
-            "docs/CHANGELOG.md",
             "LICENSE"
           )
-
-          foreach ($file in $releaseFiles) {
-            Copy-Item -LiteralPath $file -Destination $stagingPath
-          }
-
+          foreach ($file in $releaseFiles) { Copy-Item -LiteralPath $file -Destination $stagingPath }
+          Copy-Item -LiteralPath "docs" -Destination $stagingPath -Recurse
           Compress-Archive -LiteralPath $stagingPath -DestinationPath $zipPath -CompressionLevel Optimal
-          $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash
-          "$hash  $packageName.zip" | Set-Content -LiteralPath "SHA256SUMS.txt" -Encoding ascii
+      - name: Upload Windows archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-package
+          path: chatgpt-windows-websocket-proxy-${{ github.ref_name }}.zip
 
+  macos-package:
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build macOS archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ github.ref_name }}"
+          package_name="chatgpt-macos-websocket-proxy-$tag"
+          staging_path="$RUNNER_TEMP/$package_name"
+          zip_path="$PWD/$package_name.zip"
+          mkdir -p "$staging_path"
+          cp -R macos "$staging_path/"
+          cp README.md README.en.md LICENSE "$staging_path/"
+          cp -R docs "$staging_path/"
+          chmod +x "$staging_path"/macos/*.command
+          ditto -c -k --sequesterRsrc --keepParent "$staging_path" "$zip_path"
+      - name: Upload macOS archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-package
+          path: chatgpt-macos-websocket-proxy-${{ github.ref_name }}.zip
+
+  publish:
+    needs: [windows-package, macos-package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packaged archives
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > SHA256SUMS.txt
+          for zip in artifacts/*/*.zip; do
+            (cd "$(dirname "$zip")" && sha256sum "$(basename "$zip")") >> SHA256SUMS.txt
+          done
       - name: Create GitHub Release
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ github.ref_name }}"
-          $zipName = "chatgpt-windows-websocket-proxy-$tag.zip"
-          gh release create $tag $zipName SHA256SUMS.txt --title $tag --generate-notes --verify-tag
+          set -euo pipefail
+          tag="${{ github.ref_name }}"
+          gh release create "$tag" \
+            artifacts/windows-package/*.zip \
+            artifacts/macos-package/*.zip \
+            SHA256SUMS.txt \
+            --title "$tag" --generate-notes --verify-tag
