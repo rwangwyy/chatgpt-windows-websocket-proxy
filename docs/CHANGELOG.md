@@ -1,6 +1,6 @@
 # 变更记录 / Changelog
 
-## [Unreleased]
+## [2.0.1] - 2026-09-28
 
 - Windows ChatGPT 改用程序包激活，适配更新后“该进程没有程序包标识符”的启动错误。
 - 激活期间通过 Windows 调试接口传入代理环境，并在成功或失败后清理临时设置。
@@ -36,7 +36,7 @@
 
 ## English
 
-### [Unreleased]
+### [2.0.1] - 2026-09-28
 
 - Activate Windows ChatGPT with package identity to address the startup error after app updates.
 - Supply proxy variables through the Windows package debugging interface during activation and clean up temporary settings on success or failure.
