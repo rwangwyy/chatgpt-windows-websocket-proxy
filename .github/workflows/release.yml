@@ -25,17 +25,12 @@ jobs:
           $zipPath = Join-Path $PWD "$packageName.zip"
           New-Item -ItemType Directory -Path $stagingPath | Out-Null
           $releaseFiles = @(
-            "windows/Start-WithProxy.cmd",
-            "windows/Start-WithProxy.ps1",
-            "windows/Start-ChatGPTWithProxy.ps1",
-            "windows/Start-ChromeWithProxy.ps1",
-            "windows/Start-VSCodeWithProxy.ps1",
-            "windows/ProxyLauncher.Core.ps1",
             "README.md",
             "README.en.md",
             "LICENSE"
           )
           foreach ($file in $releaseFiles) { Copy-Item -LiteralPath $file -Destination $stagingPath }
+          Copy-Item -LiteralPath "windows" -Destination $stagingPath -Recurse
           Copy-Item -LiteralPath "docs" -Destination $stagingPath -Recurse
           Compress-Archive -LiteralPath $stagingPath -DestinationPath $zipPath -CompressionLevel Optimal
       - name: Upload Windows archive

@@ -78,7 +78,7 @@ function Get-ChatGPTTargetInfo {
 
     $manifest = Get-AppxPackageManifest -Package $package
     $application = @($manifest.Package.Applications.Application) |
-        Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_.Executable) } |
+        Where-Object { [IO.Path]::GetFileName([string]$_.Executable) -ieq 'ChatGPT.exe' } |
         Select-Object -First 1
 
     if (-not $application) {
@@ -96,6 +96,8 @@ function Get-ChatGPTTargetInfo {
         Executable = $executable
         ProcessNames = @([IO.Path]::GetFileNameWithoutExtension($executable))
         Version = [string]$package.Version
+        PackageFullName = [string]$package.PackageFullName
+        AppUserModelId = "$($package.PackageFamilyName)!$($application.Id)"
     }
 }
 
@@ -261,7 +263,31 @@ function Start-ProxyTarget {
     Write-Host "正在启动：$($targetInfo.DisplayName) $($targetInfo.Version)"
     Write-Host "进程代理：$proxyUri"
 
-    if ($arguments.Count -gt 0) {
+    if ($Target -eq 'ChatGPT') {
+        if (-not ('ProxyFix.PackageLauncher' -as [type])) {
+            Add-Type -Path "$PSScriptRoot\PackageLauncher.cs"
+        }
+        $environment = @('HTTP_PROXY', 'HTTPS_PROXY', 'WS_PROXY', 'WSS_PROXY', 'NO_PROXY') |
+            ForEach-Object { "$_=$([Environment]::GetEnvironmentVariable($_, 'Process'))" }
+        try {
+            $resumeScript = Join-Path $PSScriptRoot 'Resume-PackageThread.ps1'
+            if (-not (Test-Path -LiteralPath $resumeScript -PathType Leaf)) {
+                throw "缺少启动辅助脚本：$resumeScript。请下载完整发布包。"
+            }
+            $powershellExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+            $resumeCommand = '"{0}" -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "{1}"' -f $powershellExe, $resumeScript
+            $launchedId = [ProxyFix.PackageLauncher]::Start($targetInfo.PackageFullName, $targetInfo.AppUserModelId, [string[]]$environment, $resumeCommand)
+            Start-Sleep -Seconds 2
+            if (-not (Get-Process -Id $launchedId -ErrorAction SilentlyContinue)) {
+                throw 'ChatGPT 激活后已退出，请检查应用日志。'
+            }
+            Write-Host "已通过程序包身份启动，PID：$launchedId"
+        }
+        catch {
+            throw "ChatGPT 程序包激活失败：$($_.Exception.Message)"
+        }
+    }
+    elseif ($arguments.Count -gt 0) {
         Start-Process -FilePath $targetInfo.Executable -ArgumentList $arguments
     }
     else {

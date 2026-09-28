@@ -1,5 +1,13 @@
 # 变更记录 / Changelog
 
+## [Unreleased]
+
+- Windows ChatGPT 改用程序包激活，适配更新后“该进程没有程序包标识符”的启动错误。
+- 激活期间通过 Windows 调试接口传入代理环境，并在成功或失败后清理临时设置。
+- ChatGPT 独立入口复用共享核心，统一菜单和独立启动使用相同实现。
+- 为代理环境激活增加启动线程恢复脚本，修复空辅助命令导致的 `0x80070057` 参数错误，并输出失败步骤及错误码。
+- 用户已在 ChatGPT 26.924.2738.0 上完成关闭 TUN 的对照验证：直接启动经历 5 次重连后回退，ProxyFix 启动直接连接。
+
 ## [2.0.0] - 2026-09-09
 
 - 按系统整理项目目录：Windows 文件移入 `windows/`，macOS 文件移入 `macos/`。
@@ -29,6 +37,14 @@
 ## English
 
 ### [Unreleased]
+
+- Activate Windows ChatGPT with package identity to address the startup error after app updates.
+- Supply proxy variables through the Windows package debugging interface during activation and clean up temporary settings on success or failure.
+- Share the ChatGPT launch implementation between standalone and unified entries.
+- Add a startup-thread resume helper to fix `0x80070057` caused by an empty helper command when supplying environment variables; report the failing stage and HRESULT.
+- User-verified on ChatGPT 26.924.2738.0 with TUN disabled: a normal launch retries five times before falling back, while ProxyFix connects immediately.
+
+### [2.0.0] - 2026-09-09
 
 - Organized the repository by platform: Windows files are under `windows/`, macOS files under `macos/`.
 - Added standalone and unified macOS launchers for ChatGPT, Chrome, and VS Code.

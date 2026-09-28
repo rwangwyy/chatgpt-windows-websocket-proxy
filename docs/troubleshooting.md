@@ -2,6 +2,10 @@
 
 ## 中文
 
+### 提示“该进程没有程序包标识符”
+
+旧版 Windows 启动器直接运行 `ChatGPT.exe`，可能无法满足新版应用的身份要求。请使用更新后的完整启动器目录，确保 `ProxyLauncher.Core.ps1`、`PackageLauncher.cs` 和 `Resume-PackageThread.ps1` 与入口脚本放在一起。新版按程序包 ID 激活应用；不能用直接运行安装目录 EXE 来替代。
+
 ### 启动后仍然重连
 
 - 确认代理软件正在运行，且端口类型与协议一致。
@@ -33,6 +37,10 @@ chmod +x macos/*.command
 默认端口是 `7890`，但代理软件的 HTTP、Mixed 和 SOCKS5 端口可能不同。只有确认端口类型后，才使用对应协议，例如 `socks5://127.0.0.1:7891`。
 
 ## English
+
+### “The process has no package identity” startup error
+
+Older Windows launchers execute `ChatGPT.exe` directly, which may not meet updated app requirements. Use the complete updated launcher directory, keeping `ProxyLauncher.Core.ps1`, `PackageLauncher.cs`, and `Resume-PackageThread.ps1` alongside the entry scripts. The new launcher activates the app by package identity instead of executing the installed EXE directly.
 
 ### The app still reconnects
 
